@@ -1,0 +1,8 @@
+# show the password saved for github.com (prompts for your keychain password)
+security find-generic-password -s "github.com" -w
+
+# ensure osxkeychain helper is enabled for git
+git config --global credential.helper osxkeychain
+
+# personal access token from github: 
+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
