@@ -41,7 +41,30 @@ It features:
 ---
 ## 🚀 How to Run Locally / Cloud9
 
-### 1. Create virtual environment
+### 1. Clone the repository
+```bash
+git clone https://github.com/piaoruilin/252RCOSE45700.git
+cd 252RCOSE45700
+```
+
+### 2. Create environment
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+### 3. Install dependencies
+``` bash
+pip install -r requirements.txt
+```
+
+### 4. Set OpenAI API key
+``` bash
+export OPENAI_API_KEY="your_api_key_here"
+```
+
+### 5. Run the FastAPI server
+```bash
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
