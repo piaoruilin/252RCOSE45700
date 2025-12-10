@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RAG Jazz Chatbot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1e293b, #020617);
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .chat-wrapper {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-header-left {
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .chat-subtitle {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+    .status-pill {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+    .chat-body {
+      padding: 16px;
+      height: 430px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .msg {
+      margin-bottom: 14px;
+      max-width: 80%;
+      line-height: 1.4;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+    .msg-user {
+      margin-left: auto;
+      background: #4f46e5;
+    }
+    .msg-bot {
+      margin-right: auto;
+      background: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+    .msg-meta {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .sources-list {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    .sources-list li {
+      margin-left: 18px;
+      margin-bottom: 2px;
+    }
+    .chat-footer {
+      border-top: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.98);
+    }
+    .chat-input {
+      flex: 1;
+      resize: none;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+      max-height: 90px;
+      min-height: 38px;
+    }
+    .chat-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.8);
+    }
+    .send-btn {
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.05s ease;
+      box-shadow: 0 8px 18px rgba(79, 70, 229, 0.5);
+    }
+    .send-btn:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.55);
+    }
+    .send-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 12px rgba(79, 70, 229, 0.45);
+    }
+    .send-btn[disabled] {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+    }
+    .footer-hint {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-wrapper">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="chat-title">🎷 Jazz RAG Chatbot</div>
+        <div class="chat-subtitle">
+          LangChain + Chroma + OpenAI • Answers grounded in jazz documents with source citations
+        </div>
+      </div>
+      <div class="status-pill">● Online</div>
+    </div>
+
+    <div id="chat-body" class="chat-body">
+      <div class="msg msg-bot">
+        Hi! Ask me anything about jazz standards or jazz artists.
+        <span class="msg-meta">assistant • grounded in your PDF/TXT data</span>
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <textarea id="chat-input" class="chat-input"
+        placeholder="Ask about jazz standards, artists, recordings... (Shift+Enter for newline)"></textarea>
+      <button id="send-btn" class="send-btn">
+        <span>Send</span>
+        <span>➤</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "/chat"; // same origin as FastAPI
+    const chatBody = document.getElementById("chat-body");
+    const chatInput = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    function appendMessage(role, text, sources) {
+      const div = document.createElement("div");
+      div.classList.add("msg");
+      div.classList.add(role === "user" ? "msg-user" : "msg-bot");
+      div.innerText = text;
+
+      const meta = document.createElement("span");
+      meta.classList.add("msg-meta");
+      meta.innerText = role === "user" ? "you" : "assistant";
+      div.appendChild(document.createElement("br"));
+      div.appendChild(meta);
+
+      if (role === "bot" && sources && sources.length > 0) {
+        const ul = document.createElement("ul");
+        ul.classList.add("sources-list");
+        ul.innerHTML = sources
+          .map(
+            (s) =>
+              `<li>[${s.index}] ${s.source}${s.page !== null && s.page !== undefined ? " (page " + s.page + ")" : ""}</li>`
+          )
+          .join("");
+        div.appendChild(ul);
+      }
+
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      appendMessage("user", text);
+      chatInput.value = "";
+      chatInput.focus();
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: text }),
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          appendMessage("bot", "Error: " + errText);
+        } else {
+          const data = await res.json();
+          appendMessage("bot", data.answer || JSON.stringify(data), data.sources);
+        }
+      } catch (err) {
+        appendMessage("bot", "Network error: " + err.message);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
