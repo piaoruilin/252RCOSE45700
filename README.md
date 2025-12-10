@@ -1,0 +1,47 @@
+# 🎷 All That Jazz (LangChain + FastAPI + Chroma)
+
+This project implements a **Retrieval-Augmented Generation (RAG)** chatbot using:
+
+- **LangChain**
+- **OpenAI embeddings**
+- **Chroma vector store**
+- **FastAPI backend**
+- **Custom PDF + TXT jazz documents**
+- **Source citation for every answer (mandatory assignment requirement)**
+
+It is deployed on an **AWS Cloud9 environment running on EC2**, fully meeting the requirement for a public endpoint.
+
+---
+
+## 📌 Features
+
+### 🔍 Retrieval-Augmented Generation (RAG)
+- Embeds and indexes **multiple data sources** (PDF + TXT)
+- Retrieves the most relevant passages using ChromaDB
+- Generates grounded answers with explicit source references
+
+### 💬 FastAPI Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Health check |
+| GET | `/docs` | Swagger UI |
+| GET | `/web` | Beautiful web chat UI |
+| POST | `/chat` | Main RAG endpoint |
+
+### 🖼️ Attractive Web Chat Interface
+A custom HTML/CSS/JS interface is included under `/web`.  
+It features:
+
+- Chat bubbles  
+- Dark theme  
+- Smooth UI  
+- Source citation below each assistant message  
+- Keyboard shortcuts (Enter to send, Shift+Enter for newline)
+
+---
+## 🚀 How to Run Locally / Cloud9
+
+### 1. Create virtual environment
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
