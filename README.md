@@ -1,6 +1,6 @@
 # 🎷 All That Jazz (LangChain + FastAPI + Chroma)
 
-(This project is for Korea University's COSE457 course with guidance from Nxtcloud)
+(This project is for Korea University's COSE457 SW Project course with guidance from NxtCloud)
 
 This project implements a **Retrieval-Augmented Generation (RAG)** chatbot using:
 
